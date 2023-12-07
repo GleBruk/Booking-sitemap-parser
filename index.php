@@ -1,5 +1,4 @@
 <?php
-//url с картами сайта
 $robotsTxtUrl = 'https://www.booking.com/robots.txt';
 
 $ch = curl_init();
@@ -12,22 +11,22 @@ curl_close($ch);
 //Получаем xml со ссылками
 preg_match_all('~(https:.*\.xml)\n~', $content, $a);
 $urls = $a[1];
-//print_r($urls);
-
 //Получаем ссылки на файлы
 $xml = simplexml_load_file($urls[0]);
+//var_dump($xml);
+//die();
 $sitemaps = [];
 foreach ($xml->sitemap as $sitemap){
     $sitemaps[] = $sitemap->loc;
 }
-
+//print_r($sitemaps);
 //Берём ссылку на первый попавшийся файл и получаем его название, т.к. нет цели спарсить всю карту
 preg_match('~https://www.booking.com/(.*)~', $sitemaps[0], $a);
-$file_name = 'sitemap\\' . $a[1];
+$file_name = '/sitemap/' . $a[1];
 
 
 //Создаём файл, куда сохраним тот файл, который мы будем загружать
-$fp = fopen('C:\Users\GlebRu\Downloads\OSPanel\domains\booking-sitemap-parser\\' . $file_name, "w");
+$fp = fopen(__DIR__ . $file_name, "w");
 $ch1 = curl_init();
 //Делаем паузу перед новым запросом по ссылке
 sleep(3);
@@ -45,8 +44,8 @@ $buffer_size =12096;
 //Название для нового файла
 $out_file_name = str_replace('.gz', '', $file_name);
 //Открываем файлы
-$file = gzopen($file_name, 'rb');
-$out_file = fopen($out_file_name, 'wb');
+$file = gzopen(__DIR__ . $file_name, 'rb');
+$out_file = fopen(__DIR__ . $out_file_name, 'wb');
 //Читаем архив и записываем xml файл
 while (!gzeof($file)) {
     fwrite($out_file, gzread($file, $buffer_size));
@@ -54,9 +53,9 @@ while (!gzeof($file)) {
 //Закрываем файлы
 fclose($out_file);
 gzclose($file);
-
+//$out_file_name = '/sitemap/sitembk-airport-sr.0000.xml';
 //Получаем ссылки из xml файла
-$xml = simplexml_load_file($out_file_name);
+$xml = simplexml_load_file(__DIR__ . $out_file_name);
 $links = [];
 foreach ($xml->url as $url){
     $links[] = $url->loc;
